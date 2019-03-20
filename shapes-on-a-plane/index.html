@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>three.js dev</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	</head>
+	<body>
+		<script src="../js/three.min.js"></script>
+		<script src="../js/controls/OrbitControls.js"></script>
+		<script>
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            var controls = new THREE.OrbitControls(camera);
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 1.0;
+            controls.enableDamping = true;
+            controls.maxPolarAngle = Math.PI / 2 - 0.01
+
+            var renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+            document.body.style.overflow = 'hidden';
+
+            var geometry = new THREE.CylinderBufferGeometry( 10, 10, 30, 6, 1 );
+			var material = new THREE.MeshPhongMaterial( { color: 0xffffff, flatShading: true } );
+            for ( var i = 0; i < 500; i ++ ) {
+                const mesh = new THREE.Mesh( geometry, material );
+                mesh.position.x = Math.random() * 1600 - 800;
+                mesh.position.y = 15;
+                mesh.position.z = Math.random() * 1600 - 800;
+                mesh.updateMatrix();
+                mesh.matrixAutoUpdate = false;
+                scene.add( mesh );
+            }
+
+            const pointLight1 = new THREE.PointLight(0xFFFFFF);
+            pointLight1.position.x = 30;
+            pointLight1.position.y = 50;
+            pointLight1.position.z = 40;
+            scene.add(pointLight1);
+
+            const light = new THREE.AmbientLight(0x000022);
+			scene.add(light);
+
+            var geometry = new THREE.PlaneGeometry(2000, 2000);
+            var material = new THREE.MeshBasicMaterial({color: 0x003300, side: THREE.DoubleSide});
+            var plane = new THREE.Mesh(geometry, material);
+            plane.rotation.x = Math.PI / 2
+            plane.position.z = 0
+            scene.add(plane);
+
+            camera.position.set(0, 100, 100);
+            camera.rotation.y = 0.0;
+            controls.update();
+
+            requestAnimationFrame(animate);
+
+            const tanFOV = Math.tan( ( ( Math.PI / 180 ) * camera.fov / 2 ) );
+            const initialWindowHeight = window.innerHeight;
+            window.addEventListener('resize', onWindowResize, false);
+
+            function animate() {
+                controls.update()
+            	renderer.render(scene, camera);
+                requestAnimationFrame(animate);
+            }
+
+            function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+                camera.fov = (360 / Math.PI) * Math.atan(tanFOV * (window.innerHeight / initialWindowHeight));
+                camera.updateProjectionMatrix();
+                camera.lookAt(scene.position);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.render(scene, camera);
+			}
+		</script>
+	</body>
+</html>
