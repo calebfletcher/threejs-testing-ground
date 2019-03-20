@@ -10,8 +10,8 @@
         <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	</head>
 	<body>
-		<script src="../js/three.min.js"></script>
-		<script src="../js/controls/OrbitControls.js"></script>
+		<script src="../assets/js/three.min.js"></script>
+		<script src="../assets/js/controls/OrbitControls.js"></script>
 		<script>
             var scene = new THREE.Scene();
             var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -55,7 +55,7 @@
             scene.add(plane);
 
 			var loader = new THREE.FontLoader();
-			loader.load( '../fonts/Raleway Light.json', function (font) {
+			loader.load( '../assets/fonts/Raleway Light.json', function (font) {
 				var textGeometry = new THREE.TextGeometry('Hello three.js!', {
 					font: font
 				})
