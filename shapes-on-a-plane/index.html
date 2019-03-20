@@ -54,6 +54,14 @@
             plane.position.z = 0
             scene.add(plane);
 
+			var loader = new THREE.FontLoader();
+			loader.load( '../fonts/Raleway Light.json', function (font) {
+				var textGeometry = new THREE.TextGeometry('Hello three.js!', {
+					font: font
+				})
+				textGeometry.position.set(10, 10, 10)
+			});
+
             camera.position.set(0, 100, 100);
             camera.rotation.y = 0.0;
             controls.update();
