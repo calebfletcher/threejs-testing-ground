@@ -27,6 +27,9 @@
             document.body.appendChild(renderer.domElement);
             document.body.style.overflow = 'hidden';
 
+			// Initialize the rocket Group
+			const rocket = new THREE.Group();
+
 			// Nose cone
 			let points = [];
 			for (let i = 0; i < 0.5; i += 0.01) {
@@ -36,38 +39,44 @@
 			const noseMaterial = new THREE.MeshPhongMaterial({ color: 0xFF0000, side: THREE.DoubleSide });
 			const noseLathe = new THREE.Mesh(noseGeometry, noseMaterial);
 			noseLathe.position.y = 95
-			scene.add(noseLathe);
+			rocket.add(noseLathe);
 
 			// Body Cylinder
 			const bodyGeometry = new THREE.CylinderGeometry(5, 5, 100, 64);
 			const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide });
 			const bodyCylinder = new THREE.Mesh(bodyGeometry, bodyMaterial);
 			bodyCylinder.position.y = 50
-			scene.add(bodyCylinder);
+			rocket.add(bodyCylinder);
 
 			// Fins
 			const numFins = 4
 			const spacing = 2 * Math.PI/numFins
-			const center = {x: 20, z: 0}
+			const center = new THREE.Vector3(0, 0, 0)
+			const finHeight = 5
+			const finBaseLength = 20
+			const finTopLength = 5
+			const finDistFromCenter = 5
+			const fins = new THREE.Group();
 			for (let finNum = 0; finNum < numFins; finNum++) {
 				const angle = spacing * finNum
 				const finMaterial = new THREE.MeshPhongMaterial({ color: 0x0000FF, side: THREE.DoubleSide });
 				const finGeometry = new THREE.Geometry();
 				finGeometry.vertices = [
-					new THREE.Vector3(5*Math.cos(angle)+5*Math.sin(angle),0,0),
-					new THREE.Vector3(5*Math.cos(angle)+5*Math.sin(angle),20,0),
-					new THREE.Vector3(5+5*Math.cos(angle)+5+5*Math.sin(angle),5,0),
-					new THREE.Vector3(5+5*Math.cos(angle)+5+5*Math.sin(angle),0,0)
+					new THREE.Vector3(center.x+finDistFromCenter*Math.cos(angle),center.y,center.z+finDistFromCenter*Math.sin(angle)),
+					new THREE.Vector3(center.x+finDistFromCenter*Math.cos(angle),center.y+finBaseLength,center.z+finDistFromCenter*Math.sin(angle)),
+					new THREE.Vector3(center.x+(finDistFromCenter+finHeight)*Math.cos(angle),center.y+finTopLength,center.z+(finDistFromCenter+finHeight)*Math.sin(angle)),
+					new THREE.Vector3(center.x+(finDistFromCenter+finHeight)*Math.cos(angle),center.y,center.z+(finDistFromCenter+finHeight)*Math.sin(angle))
 				];
 				finGeometry.faces = [
 					new THREE.Face3(0,1,3),
 					new THREE.Face3(1,2,3)
 				];
 				const finMesh = new THREE.Mesh(finGeometry, finMaterial);
-				finMesh.position.x = center.x + finNum*10
-				finMesh.position.z = center.z + finNum*10
-				scene.add(finMesh);
+				fins.add(finMesh);
 			}
+			rocket.add(fins)
+
+			scene.add(rocket)
 
 			// Create a point light and an ambient light
             const pointLight1 = new THREE.PointLight(0xFFFFFF);
@@ -90,6 +99,7 @@
             camera.rotation.y = 0.0;
             controls.update();
 
+			var lastTimestamp = performance.now()
             requestAnimationFrame(animate);
 
 			// Add handler for window resize
@@ -107,7 +117,10 @@
 			}
 
 			// Main update function
-            function animate() {
+            function animate(timestamp) {
+				const dx = timestamp - lastTimestamp // in ms
+				const frameRate = 1000/dx // in FPS/Hz
+				lastTimestamp = timestamp
                 controls.update()
             	renderer.render(scene, camera);
                 requestAnimationFrame(animate);
