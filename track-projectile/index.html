@@ -66,11 +66,12 @@
 		const logText = document.getElementById('log');
 
 		const config = {
-			showGrid: true
+			showGrid: false,
+			simulationDelay: 3000
 		}
 
 		var scene = new THREE.Scene();
-		var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 100000);
+		var camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.01, 100000);
 		var controls = new THREE.OrbitControls(camera);
 		//controls.autoRotate = true;
 		controls.autoRotateSpeed = 0.6;
@@ -92,30 +93,30 @@
 			points.push(new THREE.Vector2(0.102 * i, 0.1 * Math.sqrt(12 * (1 - Math.pow(i + 0.5, 2)))));
 		}
 		const noseGeometry = new THREE.LatheGeometry(points, 64);
-		const noseMaterial = new THREE.MeshPhongMaterial({ color: 0xFF0000, side: THREE.DoubleSide });
+		const noseMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
 		const noseLathe = new THREE.Mesh(noseGeometry, noseMaterial);
 		noseLathe.position.y = 0.95
 		rocket.add(noseLathe);
 
 		// Body Cylinder
 		const bodyGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1, 64);
-		const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0xAAAAAA, side: THREE.DoubleSide });
+		const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0x112288, side: THREE.DoubleSide });
 		const bodyCylinder = new THREE.Mesh(bodyGeometry, bodyMaterial);
 		bodyCylinder.position.y = 0.5
 		rocket.add(bodyCylinder);
 
 		// Fins
 		const numFins = 4
-		const spacing = 2 * Math.PI / numFins
+		const spacingBetweenFins = 2 * Math.PI / numFins
 		const center = new THREE.Vector3(0, 0, 0)
 		const finHeight = 0.05
 		const finBaseLength = 0.2
 		const finTopLength = 0.05
 		const finDistFromCenter = 0.05
 		const fins = new THREE.Group();
-		const finMaterial = new THREE.MeshPhongMaterial({ color: 0x999999, side: THREE.DoubleSide });
+		const finMaterial = new THREE.MeshPhongMaterial({ color: 0xBBBBFF, side: THREE.DoubleSide });
 		for (let finNum = 0; finNum < numFins; finNum++) {
-			const angle = spacing * finNum
+			const angle = spacingBetweenFins * finNum
 			const finGeometry = new THREE.Geometry();
 			finGeometry.vertices = [
 				new THREE.Vector3(center.x + finDistFromCenter * Math.cos(angle), center.y, center.z + finDistFromCenter * Math.sin(angle)),
@@ -173,21 +174,25 @@
 			scene.add(mesh);
 		}
 
-		camera.position.set(0, 0.5, 2);
+		camera.position.set(0, 0.5, 4);
 		controls.update();
 
 		const g = -9.81
 		rocket.normalReaction = 0.0
-		rocket.thrust = 100.0
+		rocket.thrust = 50.0
 		rocket.dragCoefficient = 0.01
 		rocket.drag = 0.0
 		rocket.accel = 0.0
 		rocket.vel = 0.0
 
 		setTimeout(() => {
+			logEvent('Thrust started')
+		}, config.simulationDelay)
+
+		setTimeout(() => {
 			rocket.thrust = 0.0
 			logEvent('Thrust stopped')
-		}, 3000)
+		}, 3000 + config.simulationDelay)
 
 		const simulationStartTime = performance.now()
 		logEvent('Simulation started')
@@ -197,6 +202,7 @@
 		let dtHistory = Array(numSamples).fill(0)
 		let reachedMax = false
 		let lastAltitude = 0
+
 		requestAnimationFrame(animate);
 
 		// Add handler for window resize
@@ -215,6 +221,13 @@
 
 		// Main update function
 		function animate(timestamp) {
+			if (performance.now() - simulationStartTime < config.simulationDelay) {
+				lastTimestamp = performance.now()
+				controls.update()
+				renderer.render(scene, camera);
+				requestAnimationFrame(animate)
+				return
+			}
 			const dt = (timestamp - lastTimestamp) / 1000 // in s
 			lastTimestamp = timestamp
 			dtHistory.push(dt)
@@ -241,7 +254,7 @@
 			rocket.position.y = Math.max(rocket.position.y + dt * rocket.vel, 0)
 			rocket.vel = rocket.vel + dt * rocket.accel
 			rocket.accel = rocket.thrust + g + rocket.normalReaction + rocket.drag
-			//console.log(rocket.position.y, rocket.vel, rocket.accel)
+			//console.log(rocket.position.y, rocket.vel, rocket.accel, rocket.drag)
 
 			statsAlt.innerText = rocket.position.y.toExponential(2) + ' m'
 			statsVel.innerText = rocket.vel.toExponential(2) + ' m/s'
