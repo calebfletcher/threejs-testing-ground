@@ -58,6 +58,10 @@
 
 			const logText = document.getElementById('log');
 
+			const config = {
+				showGrid: true
+			}
+
             var scene = new THREE.Scene();
             var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 100000);
             var controls = new THREE.OrbitControls(camera);
@@ -133,18 +137,19 @@
 			scene.add(light);
 
 			// Create a ground plane
-            var geometry = new THREE.PlaneGeometry(20000, 20000);
-            var material = new THREE.MeshBasicMaterial({color: 0x003300, side: THREE.DoubleSide});
-            var plane = new THREE.Mesh(geometry, material);
+            const planeGeometry = new THREE.PlaneGeometry(20000, 20000);
+            const planeMaterial = new THREE.MeshBasicMaterial({color: 0x003300, side: THREE.DoubleSide});
+            const plane = new THREE.Mesh(planeGeometry, planeMaterial);
             plane.rotation.x = Math.PI / 2
             plane.position.y = -0.01
             scene.add(plane);
 
-			// Grid lines on fround plane
-			/*var gridHelper = new THREE.GridHelper(4000, 400, 0x0000ff, 0x808080);
-			gridHelper.position.y = 0;
-			gridHelper.position.x = 0;
-			scene.add(gridHelper);*/
+			if (config.showGrid) {
+				const gridHelper = new THREE.GridHelper(4000, 400, 0x0000ff, 0x808080);
+				gridHelper.position.y = 0;
+				gridHelper.position.x = 0;
+				scene.add(gridHelper);
+			}
 
 			geometry = new THREE.CylinderBufferGeometry(0.1, 0.1, 0.3, 6, true);
 			material = new THREE.MeshPhongMaterial({
